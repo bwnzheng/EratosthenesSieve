@@ -85,6 +85,7 @@ int main (int argc, char *argv[])
     for (int block_num=0;block_num<num_blocks;block_num++){
         int block_low_index = block_num * block_size;
         int block_low_value = low_value + block_low_index * 2;
+        int block_end_index = block_low_index + block_size > size ? size : block_low_index + block_size;
         for (int j=0;j<global_count;j++){
             prime = primes[j];
 
@@ -98,20 +99,15 @@ int main (int argc, char *argv[])
             }
             first+= block_low_index;
 
-            int end = block_low_index + block_size > size?size:block_low_index + block_size;
-
-            for (int i = first;i< end;i+=prime){
+            for (int i = first; i < block_end_index; i+=prime){
                 marked[i] = 1;
             }
         }
+        for (i = block_low_index; i < block_end_index;i++){
+            if (!marked[i]) count++;
+        }
     }
 
-
-
-    for (i = 0; i < size; i++)
-        if (!marked[i]) {
-            count++;
-        }
     MPI_Reduce (&count, &global_count, 1, MPI_INT, MPI_SUM,
                 0, MPI_COMM_WORLD);
 
