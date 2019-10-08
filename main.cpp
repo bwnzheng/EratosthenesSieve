@@ -60,7 +60,7 @@ int main (int argc, char *argv[])
 
     /* Allocate this process's share of the array. */
 
-    marked = (char *) malloc (size);
+    marked = new char[size]();
 
     if (marked == NULL) {
         printf ("Cannot allocate enough memory\n");
@@ -68,7 +68,6 @@ int main (int argc, char *argv[])
         exit (1);
     }
 
-    for (i = 0; i < size; i++) marked[i] = 0;
     if (!id) index = 0;
     prime = 2;
     do {
@@ -88,7 +87,7 @@ int main (int argc, char *argv[])
     count = 0;
     for (i = 0; i < size; i++)
         if (!marked[i]) count++;
-    if (p > 1) MPI_Reduce (&count, &global_count, 1, MPI_INT, MPI_SUM,
+    MPI_Reduce (&count, &global_count, 1, MPI_INT, MPI_SUM,
                            0, MPI_COMM_WORLD);
 
     /* Stop the timer */
