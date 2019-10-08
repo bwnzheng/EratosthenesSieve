@@ -68,9 +68,9 @@ int main (int argc, char *argv[])
     num_sqrtn = (num_sqrtn-3)/2 + 1;
     char* calp = (char *) malloc(num_sqrtn*sizeof(char));
 
-    marked = (char *) malloc ((size)*sizeof(char));
     //16
     int block_size=2<<16; //separate marked by every block_size elements
+    marked = new char[size]();
 
     if (marked == NULL) {
         printf ("Cannot allocate enough memory\n");
@@ -138,7 +138,6 @@ int main (int argc, char *argv[])
 
     elapsed_time += MPI_Wtime();
 
-    free(marked);
     free(calp);
     free(primes);
 
