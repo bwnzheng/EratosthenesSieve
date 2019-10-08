@@ -6,10 +6,10 @@
 
 int main (int argc, char *argv[])
 {
-    int    count;        /* Local prime count */
+    int    count = 0;        /* Local prime count */
     double elapsed_time; /* Parallel execution time */
     int    first;        /* Index of first multiple */
-    int    global_count; /* Global prime count */
+    int    global_count = 0; /* Global prime count */
     int    high_value;   /* Highest value on this proc */
     int    i;
     int    id;           /* Process ID number */
@@ -63,11 +63,14 @@ int main (int argc, char *argv[])
 
     /* Allocate this process's share of the array. */
 
-    marked = (char *) malloc (size*sizeof(char));
     int num_sqrtn = floor(sqrt(n));
     if (!(num_sqrtn%2)) num_sqrtn--;
     num_sqrtn = (num_sqrtn-3)/2 + 1;
     char* calp = (char *) malloc(num_sqrtn*sizeof(char));
+
+    marked = (char *) malloc ((size)*sizeof(char));
+    //16
+    int block_size=2<<16; //separate marked by every block_size elements
 
     if (marked == NULL) {
         printf ("Cannot allocate enough memory\n");
@@ -96,23 +99,34 @@ int main (int argc, char *argv[])
         if (!calp[i]) primes[j++]= i * 2 + 3;
     }
 
-    for (int j=0;j<global_count;j++) {
-        prime = primes[j];
 
-        if (prime * prime > low_value)
-            first = (prime * prime - low_value) / 2;
-        else {
-            first = prime - (low_value % prime);
-            if (first == prime) first = 0;
-            else if (first % 2) first = (first + prime) / 2;
-            else first = first / 2;
-        }
-        for (i = first; i < size; i += prime) {
-            marked[i] = 1;
+    int num_blocks=size/block_size+1;
+    for (int block_num=0;block_num<num_blocks;block_num++){
+        int block_low_index = block_num * block_size;
+        int block_low_value = low_value + block_low_index * 2;
+        for (int j=0;j<global_count;j++){
+            prime = primes[j];
+
+            if (prime * prime > block_low_value)
+                first = (prime * prime - block_low_value)/2;
+            else {
+                first = prime - (block_low_value % prime);
+                if (first == prime) first=0;
+                else if (first%2) first = (first + prime)/2;
+                else first = first/2;
+            }
+            first+= block_low_index;
+
+            int end = block_low_index + block_size > size?size:block_low_index + block_size;
+
+            for (int i = first;i< end;i+=prime){
+                marked[i] = 1;
+            }
         }
     }
 
-    count = 0;
+
+
     for (i = 0; i < size; i++)
         if (!marked[i]) {
             count++;
