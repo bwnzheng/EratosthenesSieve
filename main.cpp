@@ -78,12 +78,9 @@ int main (int argc, char *argv[])
             first = (prime * prime - low_value)/2;
         else {
             first = prime - (low_value % prime);
-            if (first%2) {
-                first = (first + prime)/2;
-            } else {
-                if (first==prime) first=0;
-                else first = first/2;
-            }
+            if (first == prime) first=0;
+            else if (first%2) first = (first + prime)/2;
+            else first = first/2;
         }
         for (i = first; i < size; i += prime) {
             marked[i] = 1;
