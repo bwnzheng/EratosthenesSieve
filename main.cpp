@@ -50,32 +50,14 @@ int main (int argc, char *argv[])
     if (!(high_value%2)) --high_value; //if high_value is not odd (is even).
     size = (high_value - low_value)/2 + 1;
 
-    /* Bail out if all the primes used for sieving are
-       not all held by process 0 */
-
-    proc0_size = (n-1)/p;
-
-    if ((2 + proc0_size) < (int) sqrt((double) n)) {
-        if (!id) printf ("Too many processes\n");
-        MPI_Finalize();
-        exit (1);
-    }
-
     /* Allocate this process's share of the array. */
 
     marked = new char[size]();
     int num_sqrtn = floor(sqrt(n));
     if (!(num_sqrtn%2)) num_sqrtn--;
     num_sqrtn = (num_sqrtn-3)/2 + 1;
-    char* calp = (char *) malloc(num_sqrtn*sizeof(char));
+    char* calp = new char[num_sqrtn]();
 
-    if (marked == NULL) {
-        printf ("Cannot allocate enough memory\n");
-        MPI_Finalize();
-        exit (1);
-    }
-
-    for (i = 0; i < num_sqrtn; i++) calp[i] = 0;
     index = 0;
     prime = 3;
 
@@ -89,7 +71,7 @@ int main (int argc, char *argv[])
         global_count++;
     } while (prime*prime<=n);
 
-    int* primes = (int *) malloc(global_count*sizeof(int));
+    int* primes = new int[global_count]();
     int j=0;
     for (int i=0; i<num_sqrtn; i++) {
         if (!calp[i]) primes[j++]= i * 2 + 3;
@@ -123,9 +105,9 @@ int main (int argc, char *argv[])
 
     elapsed_time += MPI_Wtime();
 
-    free(marked);
-    free(calp);
-    free(primes);
+    delete[] calp;
+    delete[] primes;
+    delete[] marked;
 
     /* Print the results */
 
