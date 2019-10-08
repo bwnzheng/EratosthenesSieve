@@ -61,12 +61,6 @@ int main (int argc, char *argv[])
     int block_size=2<<16; //separate marked by every block_size elements
     marked = new char[size]();
 
-    if (marked == NULL) {
-        printf ("Cannot allocate enough memory\n");
-        MPI_Finalize();
-        exit (1);
-    }
-
     index = 0;
     prime = 3;
 
