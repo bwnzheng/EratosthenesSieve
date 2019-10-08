@@ -63,7 +63,7 @@ int main (int argc, char *argv[])
 
     /* Allocate this process's share of the array. */
 
-    marked = (char *) malloc (size*sizeof(char));
+    marked = new char[size]();
     int num_sqrtn = floor(sqrt(n));
     if (!(num_sqrtn%2)) num_sqrtn--;
     num_sqrtn = (num_sqrtn-3)/2 + 1;
@@ -75,7 +75,6 @@ int main (int argc, char *argv[])
         exit (1);
     }
 
-    for (i = 0; i < size; i++) marked[i] = 0;
     for (i = 0; i < num_sqrtn; i++) calp[i] = 0;
     index = 0;
     prime = 3;
