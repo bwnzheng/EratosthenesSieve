@@ -63,7 +63,11 @@ int main (int argc, char *argv[])
 
     /* Allocate this process's share of the array. */
 
-    marked = (char *) malloc (size);
+    marked = (char *) malloc (size*sizeof(char));
+    int num_sqrtn = floor(sqrt(n));
+    if (!(num_sqrtn%2)) num_sqrtn--;
+    num_sqrtn = (num_sqrtn-3)/2 + 1;
+    char* calp = (char *) malloc(num_sqrtn*sizeof(char));
 
     if (marked == NULL) {
         printf ("Cannot allocate enough memory\n");
@@ -72,29 +76,42 @@ int main (int argc, char *argv[])
     }
 
     for (i = 0; i < size; i++) marked[i] = 0;
-    if (!id) index = 0;
+    for (i = 0; i < num_sqrtn; i++) calp[i] = 0;
+    index = 0;
     prime = 3;
+
+    // calculate all the primes need to sieve by.
     do {
+        for (int i = 2 * index * index + 6 * index + 3; i < num_sqrtn; i += prime) {
+            calp[i] = 1;
+        }
+        while (calp[++index]);
+        prime = index * 2 + 3;
+        global_count++;
+    } while (prime*prime<=n);
+
+    int* primes = (int *) malloc(global_count*sizeof(int));
+    int j=0;
+    for (int i=0; i<num_sqrtn; i++) {
+        if (!calp[i]) primes[j++]= i * 2 + 3;
+    }
+
+    for (int j=0;j<global_count;j++) {
+        prime = primes[j];
+
         if (prime * prime > low_value)
-            first = (prime * prime - low_value)/2;
+            first = (prime * prime - low_value) / 2;
         else {
             first = prime - (low_value % prime);
-            if (first%2) {
-                first = (first + prime)/2;
-            } else {
-                if (first==prime) first=0;
-                else first = first/2;
-            }
+            if (first == prime) first = 0;
+            else if (first % 2) first = (first + prime) / 2;
+            else first = first / 2;
         }
         for (i = first; i < size; i += prime) {
             marked[i] = 1;
         }
-        if (!id) {
-            while (marked[++index]);
-            prime = index*2 + 3;
-        }
-        if (p > 1) MPI_Bcast (&prime,  1, MPI_INT, 0, MPI_COMM_WORLD);
-    } while (prime * prime <= n);
+    }
+
     count = 0;
     for (i = 0; i < size; i++)
         if (!marked[i]) {
@@ -107,6 +124,9 @@ int main (int argc, char *argv[])
 
     elapsed_time += MPI_Wtime();
 
+    free(marked);
+    free(calp);
+    free(primes);
 
     /* Print the results */
 
