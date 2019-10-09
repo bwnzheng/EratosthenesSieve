@@ -88,7 +88,7 @@ int main (int argc, char *argv[])
     count = 0;
     for (i = 0; i < size; i++)
         if (!marked[i]) count++;
-    if (p > 1) MPI_Reduce (&count, &global_count, 1, MPI_INT, MPI_SUM,
+    MPI_Reduce (&count, &global_count, 1, MPI_INT, MPI_SUM,
                            0, MPI_COMM_WORLD);
 
     /* Stop the timer */
@@ -99,7 +99,9 @@ int main (int argc, char *argv[])
     /* Print the results */
 
     if (!id) {
-        printf("%d\t%d\t%10.6f\n",p,n,elapsed_time);
+        printf ("There are %d primes less than or equal to %d\n",
+                global_count, n);
+        printf ("SIEVE (%d) %10.6f\n", p, elapsed_time);
     }
     MPI_Finalize ();
     return 0;
